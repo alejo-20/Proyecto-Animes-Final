@@ -1,6 +1,8 @@
 import { supabase } from './supabase';
 
-const BASE_URL = 'https://anime-api-production-57cf.up.railway.app';
+const BACKEND_URL = __DEV__
+  ? 'http://localhost:3000'
+  : 'https://proyecto-animes-final-production.up.railway.app';
 
 async function getToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
@@ -16,14 +18,14 @@ async function authHeaders(): Promise<Record<string, string>> {
 
 export async function getCategories(): Promise<any[]> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/categories`, { headers });
+  const res = await fetch(`${BACKEND_URL}/categories`, { headers });
   if (!res.ok) throw new Error('Error al obtener categorías');
   return res.json();
 }
 
 export async function createCategory(name: string, description?: string): Promise<any> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/categories`, {
+  const res = await fetch(`${BACKEND_URL}/categories`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ name, description }),
@@ -34,7 +36,7 @@ export async function createCategory(name: string, description?: string): Promis
 
 export async function updateCategory(id: number | string, name: string, description?: string): Promise<any> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/categories/${id}`, {
+  const res = await fetch(`${BACKEND_URL}/categories/${id}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify({ name, description }),
@@ -45,13 +47,13 @@ export async function updateCategory(id: number | string, name: string, descript
 
 export async function deleteCategory(id: number | string): Promise<void> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/categories/${id}`, { method: 'DELETE', headers });
+  const res = await fetch(`${BACKEND_URL}/categories/${id}`, { method: 'DELETE', headers });
   if (!res.ok) throw new Error('Error al eliminar categoría');
 }
 
 export async function getCharacters(category?: string): Promise<any[]> {
   const headers = await authHeaders();
-  const url = category ? `${BASE_URL}/characters?category=${category}` : `${BASE_URL}/characters`;
+  const url = category ? `${BACKEND_URL}/characters?category=${category}` : `${BACKEND_URL}/characters`;
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error('Error al obtener personajes');
   return res.json();
@@ -65,7 +67,7 @@ export async function createCharacter(data: {
   images?: string[];
 }): Promise<any> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/characters`, {
+  const res = await fetch(`${BACKEND_URL}/characters`, {
     method: 'POST',
     headers,
     body: JSON.stringify(data),
@@ -81,7 +83,7 @@ export async function updateCharacter(id: number | string, data: {
   images?: string[];
 }): Promise<any> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/characters/${id}`, {
+  const res = await fetch(`${BACKEND_URL}/characters/${id}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(data),
@@ -92,13 +94,13 @@ export async function updateCharacter(id: number | string, data: {
 
 export async function deleteCharacter(id: number | string): Promise<void> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/characters/${id}`, { method: 'DELETE', headers });
+  const res = await fetch(`${BACKEND_URL}/characters/${id}`, { method: 'DELETE', headers });
   if (!res.ok) throw new Error('Error al eliminar personaje');
 }
 
 export async function getCharacterWithImages(category: string, name: string): Promise<any> {
   const headers = await authHeaders();
-  const res = await fetch(`${BASE_URL}/characters?category=${category}`, { headers });
+  const res = await fetch(`${BACKEND_URL}/characters?category=${category}`, { headers });
   if (!res.ok) throw new Error('Error al buscar personaje');
   const chars = await res.json();
   return chars.find((c: any) => c.name.toLowerCase() === name.toLowerCase()) || null;

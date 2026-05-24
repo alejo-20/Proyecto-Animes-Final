@@ -13,14 +13,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1a1a2e",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.james192.animesj"
+      "package": "com.alejandr020.animeapp"
     },
     "web": {
       "output": "static",
@@ -48,7 +48,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9cf13f8b-7e3a-4292-aa5a-0afcdf8e66c7"
+        "projectId": "1d0c3638-a2e0-4867-9ddf-ff8cfa597e92"
       }
     },
     "owner": "james192",
