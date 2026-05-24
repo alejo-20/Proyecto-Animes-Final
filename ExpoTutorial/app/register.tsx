@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Link, router } from "expo-router";
-import { useAuth } from "@/context/AuthContext";
 import { colors, sharedStyles } from "@/theme";
+import { register as authRegister } from "@/services/auth";
 
 export default function RegisterScreen() {
-  const { register, loading } = useAuth();
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!nombre.trim() || !email.trim() || !password.trim()) {
@@ -17,11 +17,14 @@ export default function RegisterScreen() {
       return;
     }
     setError("");
+    setLoading(true);
     try {
-      await register(email.trim(), password, nombre.trim());
-      router.replace("/(tabs)/inicio");
+      await authRegister(email.trim(), password, nombre.trim());
+      router.replace("/(tabs)" as any);
     } catch (e: any) {
       setError(e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,7 +81,7 @@ export default function RegisterScreen() {
           <Text style={{ ...sharedStyles.buttonText, color: colors.text }}>{loading ? "REGISTRANDO..." : "CREAR CUENTA"}</Text>
         </Pressable>
 
-        <Link href="/auth/login" style={styles.link}>
+        <Link href={"/" as any} style={styles.link}>
           <Text style={styles.linkText}>
             ¿YA TIENES CUENTA? <Text style={{ color: colors.secondary, fontWeight: "700" }}>INGRESAR</Text>
           </Text>

@@ -1,7 +1,7 @@
-FROM node:22-alpine
+FROM node:20-alpine
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --ignore-scripts
+COPY package*.json ./
+RUN npm install
 COPY . .
 EXPOSE 3000
-CMD ["node", "index.js"]
+CMD ["node", "src/index.js"]

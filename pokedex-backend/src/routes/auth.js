@@ -1,117 +1,42 @@
 const { Router } = require('express');
-const supabase = require('../supabase');
+const { supabaseAdmin, supabaseAnon } = require('../supabase');
 
 const router = Router();
 
-/**
- * @openapi
- * /api/auth/register:
- *   post:
- *     tags:
- *       - Auth
- *     summary: Registrar un nuevo usuario
- *     description: Crea una cuenta nueva usando email y contraseña a través de Supabase Auth.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: usuario@ejemplo.com
- *               password:
- *                 type: string
- *                 format: password
- *                 example: MiPassword123
- *               nombre:
- *                 type: string
- *                 example: Juan Pérez
- *     responses:
- *       201:
- *         description: Usuario registrado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         description: Error de validación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
 router.post('/register', async (req, res) => {
-  const { email, password, nombre } = req.body;
+  const { email, password, name } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y password son requeridos' });
   }
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { nombre: nombre || '' },
-    },
+    email_confirm: true,
+    user_metadata: { name: name || '' },
   });
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
+  const { data: sessionData, error: signInError } = await supabaseAnon.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (signInError) {
+    return res.status(400).json({ error: signInError.message });
+  }
+
   res.status(201).json({
     message: 'Usuario registrado exitosamente',
-    user: data.user,
-    session: data.session,
+    user: sessionData.user,
+    session: sessionData.session,
   });
 });
 
-/**
- * @openapi
- * /api/auth/login:
- *   post:
- *     tags:
- *       - Auth
- *     summary: Iniciar sesión
- *     description: Autentica un usuario con email y contraseña y devuelve un token de sesión.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: usuario@ejemplo.com
- *               password:
- *                 type: string
- *                 format: password
- *                 example: MiPassword123
- *     responses:
- *       200:
- *         description: Inicio de sesión exitoso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       401:
- *         description: Credenciales inválidas
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -119,7 +44,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Email y password son requeridos' });
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabaseAnon.auth.signInWithPassword({
     email,
     password,
   });
@@ -133,6 +58,22 @@ router.post('/login', async (req, res) => {
     user: data.user,
     session: data.session,
   });
+});
+
+router.get('/me', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token requerido' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error } = await supabaseAnon.auth.getUser(token);
+
+  if (error || !user) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+
+  res.json({ user });
 });
 
 module.exports = router;

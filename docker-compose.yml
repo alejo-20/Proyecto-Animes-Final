@@ -4,19 +4,12 @@ services:
     container_name: pokedex-backend
     ports:
       - "3000:3000"
-    env_file:
-      - ./pokedex-backend/.env
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: ./ExpoTutorial
-      args:
-        EXPO_PUBLIC_API_URL: http://localhost:3000/api
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
+    environment:
+      - PORT=3000
+      - SUPABASE_URL=https://pergcqdvwbasvtkranfd.supabase.co
+      - SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcmdjcWR2d2Jhc3Z0a3JhbmZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTY0NDQzNCwiZXhwIjoyMDk1MjIwNDM0fQ.G2gNK1YNctvAFsOyxVRDmEyOBOCOHxVlCJomnYJEstI
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcmdjcWR2d2Jhc3Z0a3JhbmZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDQ0MzQsImV4cCI6MjA5NTIyMDQzNH0.HYI_qMVjCl5UmbXfrNIoiMNIGB1B_m-VKQ7YJ-OcoMg
+      - SERVER_URL=http://localhost:3000
     restart: unless-stopped
 
   sonarqube:

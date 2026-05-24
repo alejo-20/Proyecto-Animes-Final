@@ -1,8 +1,6 @@
 import { Stack } from "expo-router";
-import { AuthProvider } from "../context/AuthContext";
-import { AnimeProvider } from "../context/AnimeContext";
 import { useFonts, SpaceGrotesk_300Light, SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk";
-import { ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { colors } from "@/theme";
 
 export default function RootLayout() {
@@ -22,14 +20,10 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <AnimeProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-      </AnimeProvider>
-    </AuthProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="(tabs)" />
+    </Stack>
   );
 }

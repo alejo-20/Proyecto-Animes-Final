@@ -1,18 +1,11 @@
 {
+  "cli": { "version": ">= 5.0.0" },
   "build": {
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://pokedex-backend-udr9.onrender.com/api"
-      }
+      "android": { "buildType": "apk" }
     },
     "production": {
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://pokedex-backend-udr9.onrender.com/api"
-      }
+      "android": { "buildType": "app-bundle" }
     }
   }
 }

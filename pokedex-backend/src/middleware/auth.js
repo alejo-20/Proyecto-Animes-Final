@@ -1,4 +1,4 @@
-const supabase = require('../supabase');
+const { supabaseAnon } = require('../supabase');
 
 async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -8,20 +8,13 @@ async function requireAuth(req, res, next) {
 
   const token = authHeader.replace('Bearer ', '');
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !user) {
+  const { data: { user }, error } = await supabaseAnon.auth.getUser(token);
+  if (error || !user) {
     return res.status(401).json({ error: 'Token inválido o expirado' });
   }
 
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: token,
-    refresh_token: token,
-  });
-  if (sessionError) {
-    return res.status(401).json({ error: 'Error al establecer sesión' });
-  }
-
   req.user = user;
+  req.token = token;
   next();
 }
 
