@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 import { getCharacters } from "@/services/api";
 
@@ -12,6 +13,7 @@ const CATEGORIES = [
 ];
 
 export default function InicioScreen() {
+  const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState<any>(null);
   const [searching, setSearching] = useState(false);
@@ -55,12 +57,12 @@ export default function InicioScreen() {
         <Text style={styles.sectionTitle}>CATEGORÍAS</Text>
         <View style={styles.categoriesGrid}>
           {CATEGORIES.map((cat) => (
-            <View key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]}>
+            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + cat.slug)}>
               <View style={[styles.categoryIcon, { backgroundColor: cat.color + "15" }]}>
                 <Ionicons name={cat.icon} size={24} color={cat.color} />
               </View>
               <Text style={styles.categoryLabel}>{cat.label}</Text>
-            </View>
+            </Pressable>
           ))}
         </View>
 

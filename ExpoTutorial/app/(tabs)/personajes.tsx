@@ -1,12 +1,13 @@
 import { useCallback, useState } from "react";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { getCategories, getCharacters, createCharacter, updateCharacter, deleteCharacter } from "@/services/api";
 import * as ImagePicker from "expo-image-picker";
 
 export default function PersonajesScreen() {
+  const { category } = useLocalSearchParams<{ category?: string }>();
   const [characters, setCharacters] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -16,15 +17,16 @@ export default function PersonajesScreen() {
   const [abilities, setAbilities] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [images, setImages] = useState<string[]>([]);
-  const [filterCat, setFilterCat] = useState<string>("");
+  const [filterCat, setFilterCat] = useState<string>(category || "");
 
   useFocusEffect(
     useCallback(() => { loadData(); }, [])
   );
 
-  const loadData = async () => {
+  const loadData = async (catSlug?: string) => {
     try {
-      const [chars, cats] = await Promise.all([getCharacters(filterCat || undefined), getCategories()]);
+      const slug = catSlug ?? filterCat;
+      const [chars, cats] = await Promise.all([getCharacters(slug || undefined), getCategories()]);
       setCharacters(chars);
       setCategories(cats);
     } catch { setCharacters([]); setCategories([]); }
@@ -87,11 +89,11 @@ export default function PersonajesScreen() {
         <View style={styles.filterRow}>
           <Text style={styles.filterLabel}>FILTRAR:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterChips}>
-            <Pressable style={[styles.chip, !filterCat && { borderColor: colors.primary }]} onPress={() => { setFilterCat(""); loadData(); }}>
+            <Pressable style={[styles.chip, !filterCat && { borderColor: colors.primary }]} onPress={() => { setFilterCat(""); loadData(""); }}>
               <Text style={[styles.chipText, !filterCat && { color: colors.primary }]}>TODOS</Text>
             </Pressable>
             {categories.map(cat => (
-              <Pressable key={cat.id} style={[styles.chip, filterCat === cat.slug && { borderColor: colors.primary }]} onPress={() => { setFilterCat(cat.slug); }}>
+              <Pressable key={cat.id} style={[styles.chip, filterCat === cat.slug && { borderColor: colors.primary }]} onPress={() => { setFilterCat(cat.slug); loadData(cat.slug); }}>
                 <Text style={[styles.chipText, filterCat === cat.slug && { color: colors.primary }]}>{cat.name.toUpperCase()}</Text>
               </Pressable>
             ))}
