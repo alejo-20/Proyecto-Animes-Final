@@ -1,47 +1,96 @@
-import { useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
-import { getCharacters } from "@/services/api";
+
+const API_BASE = "https://anime-api-production-57cf.up.railway.app";
 
 const CATEGORIES = [
-  { slug: "saint-seiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
-  { slug: "hunter-x-hunter", label: "Hunter x Hunter", name: "Hunter x Hunter", icon: "compass" as const, color: colors.secondary },
-  { slug: "one-piece", label: "One Piece", name: "One Piece", icon: "boat" as const, color: colors.accent },
-  { slug: "naruto", label: "Naruto", name: "Naruto", icon: "flame" as const, color: "#FF6B35" },
+  { slug: "saint-seiya", apiSlug: "saintseiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
+  { slug: "hunter-x-hunter", apiSlug: "hunterxhunter", label: "Hunter x Hunter", name: "Hunter x Hunter", icon: "compass" as const, color: colors.secondary },
+  { slug: "one-piece", apiSlug: "onepiece", label: "One Piece", name: "One Piece", icon: "boat" as const, color: colors.accent },
+  { slug: "naruto", apiSlug: "naruto", label: "Naruto", name: "Naruto", icon: "flame" as const, color: "#FF6B35" },
 ];
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const IMAGE_GAP = 8;
+const IMAGE_PADDING = 32;
+const IMAGE_SIZE = (SCREEN_WIDTH - IMAGE_PADDING - IMAGE_GAP) / 2;
 
 export default function InicioScreen() {
   const router = useRouter();
-  const [searchText, setSearchText] = useState("");
-  const [searchResult, setSearchResult] = useState<any>(null);
-  const [searching, setSearching] = useState(false);
-  const [showImages, setShowImages] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [searchName, setSearchName] = useState("");
+  const [characters, setCharacters] = useState<string[]>([]);
+  const [result, setResult] = useState<any>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!selectedCategory) return;
+    setError("");
+    setResult(null);
+    setImages([]);
+    setCharacters([]);
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/${selectedCategory}`);
+        if (!res.ok) throw new Error("Error al obtener personajes");
+        const data = await res.json();
+        setCharacters(data);
+      } catch {
+        setError("Error de conexión al cargar personajes");
+      }
+    })();
+  }, [selectedCategory]);
+
+  const handleCategoryPress = (cat: typeof CATEGORIES[0]) => {
+    setSelectedCategory(cat.apiSlug);
+    setSearchName("");
+    setResult(null);
+    setError("");
+    router.push('/(tabs)/personajes?category=' + cat.slug);
+  };
 
   const handleSearch = async () => {
-    if (!searchText.trim()) return;
-    setSearching(true);
+    if (!selectedCategory) {
+      Alert.alert("Selecciona una categoría", "Toca una tarjeta de categoría primero");
+      return;
+    }
+    if (!searchName.trim()) return;
+    setLoading(true);
+    setError("");
+    setResult(null);
+    setImages([]);
     try {
-      const chars = await getCharacters();
-      const found = chars.find((c: any) =>
-        c.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-      if (found) {
-        setSearchResult(found);
-        if (found.images?.length > 0) {
-          setSelectedImages(found.images);
-        }
-      } else {
+      const res = await fetch(`${API_BASE}/${selectedCategory}/${encodeURIComponent(searchName.trim())}`);
+      if (res.status === 404) {
         Alert.alert("No encontrado", "Personaje no encontrado");
+        return;
       }
-    } catch (e: any) {
-      Alert.alert("Error", e.message);
+      if (!res.ok) throw new Error("Error del servidor");
+      const data = await res.json();
+      setResult(data);
+      if (data.images?.length > 0) setImages(data.images);
+    } catch {
+      setError("Error de conexión");
     } finally {
-      setSearching(false);
+      setLoading(false);
     }
   };
+
+  const renderCharChip = ({ item }: { item: string }) => (
+    <Pressable style={styles.chip} onPress={() => setSearchName(item)}>
+      <Text style={styles.chipText}>{item}</Text>
+    </Pressable>
+  );
+
+  const renderImageItem = ({ item }: { item: string }) => (
+    <Image source={{ uri: item }} style={styles.modalImage} />
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -56,76 +105,104 @@ export default function InicioScreen() {
       <View style={styles.container}>
         <Text style={styles.sectionTitle}>CATEGORÍAS</Text>
         <View style={styles.categoriesGrid}>
-          {CATEGORIES.map((cat) => (
-            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + cat.slug)}>
-              <View style={[styles.categoryIcon, { backgroundColor: cat.color + "15" }]}>
-                <Ionicons name={cat.icon} size={24} color={cat.color} />
-              </View>
-              <Text style={styles.categoryLabel}>{cat.label}</Text>
-            </Pressable>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat.apiSlug;
+            return (
+              <Pressable
+                key={cat.slug}
+                style={[styles.categoryCard, { borderColor: isSelected ? cat.color : cat.color + "40", backgroundColor: isSelected ? cat.color + "10" : colors.surface }]}
+                onPress={() => handleCategoryPress(cat)}
+              >
+                <View style={[styles.categoryIcon, { backgroundColor: cat.color + "15" }]}>
+                  <Ionicons name={cat.icon} size={24} color={cat.color} />
+                </View>
+                <Text style={styles.categoryLabel}>{cat.label}</Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <Text style={styles.sectionTitle}>BUSCAR PERSONAJE</Text>
         <View style={styles.searchRow}>
           <TextInput
-            style={styles.searchInput}
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Nombre del personaje..."
+            style={[styles.searchInput, !selectedCategory && { opacity: 0.5 }]}
+            value={searchName}
+            onChangeText={setSearchName}
+            placeholder={selectedCategory ? "Nombre del personaje..." : "Selecciona una categoría primero"}
             placeholderTextColor={colors.textMuted}
+            editable={!!selectedCategory}
           />
-          <Pressable style={styles.searchBtn} onPress={handleSearch} disabled={searching}>
-            <Ionicons name="search" size={20} color={colors.bg} />
+          <Pressable style={[styles.searchBtn, { opacity: loading || !selectedCategory ? 0.5 : 1 }]} onPress={handleSearch} disabled={loading || !selectedCategory}>
+            {loading ? <ActivityIndicator size="small" color={colors.bg} /> : <Ionicons name="search" size={20} color={colors.bg} />}
           </Pressable>
         </View>
 
-        {searchResult && (
-          <View style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
+        {selectedCategory && characters.length > 0 && (
+          <View style={styles.charsSection}>
+            <Text style={styles.charsLabel}>PERSONAJES DISPONIBLES</Text>
+            <FlatList
+              data={characters}
+              renderItem={renderCharChip}
+              keyExtractor={(item) => item}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipsList}
+            />
+          </View>
+        )}
+
+        {error ? (
+          <View style={[sharedStyles.errorBox, { marginTop: 12 }]}>
+            <Text style={sharedStyles.errorText}>{error}</Text>
+          </View>
+        ) : null}
+
+        {result && (
+          <View style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary, marginTop: 16 }]}>
             <View style={[sharedStyles.cardHeader, { backgroundColor: colors.bgDarker }]}>
-              <Text style={{ ...sharedStyles.cardTitle, color: colors.primary, fontSize: 13 }}>{searchResult.name.toUpperCase()}</Text>
+              <Text style={{ ...sharedStyles.cardTitle, color: colors.primary, fontSize: 13 }}>{result.name?.toUpperCase()}</Text>
             </View>
             <View style={sharedStyles.cardBody}>
               <View style={sharedStyles.infoRow}>
-                <Text style={[sharedStyles.infoLabel, { color: colors.primary }]}>DESCRIPCION</Text>
-                <Text style={sharedStyles.infoValue}>{searchResult.description || "Sin descripción"}</Text>
+                <Text style={[sharedStyles.infoLabel, { color: colors.primary }]}>EDAD</Text>
+                <Text style={sharedStyles.infoValue}>{result.age || "—"}</Text>
               </View>
               <View style={sharedStyles.infoRow}>
-                <Text style={[sharedStyles.infoLabel, { color: colors.primary }]}>HABILIDADES</Text>
-                <Text style={sharedStyles.infoValue}>{searchResult.abilities || "Sin habilidades"}</Text>
+                <Text style={[sharedStyles.infoLabel, { color: colors.primary }]}>PODER / TÉCNICA</Text>
+                <Text style={sharedStyles.infoValue}>{result.power || result.technique || "—"}</Text>
               </View>
-              {searchResult.images?.length > 0 && (
+              <View style={sharedStyles.infoRow}>
+                <Text style={[sharedStyles.infoLabel, { color: colors.primary }]}>{images.length} IMÁGENES RECUPERADA(S)</Text>
+              </View>
+              {images.length > 0 && (
                 <Pressable
                   style={[sharedStyles.imagesButton, { backgroundColor: colors.secondary, borderColor: colors.secondary }]}
-                  onPress={() => { setSelectedImages(searchResult.images); setShowImages(true); }}
+                  onPress={() => setModalVisible(true)}
                 >
-                  <Text style={sharedStyles.imagesButtonText}>VER IMÁGENES ({searchResult.images.length})</Text>
+                  <Text style={sharedStyles.imagesButtonText}>VER IMÁGENES ({images.length})</Text>
                 </Pressable>
               )}
             </View>
           </View>
         )}
 
-        <Modal visible={showImages} transparent animationType="fade" onRequestClose={() => setShowImages(false)}>
+        <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
           <View style={sharedStyles.backdrop}>
-            <View style={sharedStyles.backdropClick} onStartShouldSetResponder={() => true} onResponderRelease={() => setShowImages(false)} />
-            <View style={sharedStyles.modalContainer} onStartShouldSetResponder={() => true}>
+            <View style={[sharedStyles.modalContainer, { maxWidth: 500, maxHeight: "80%" }]}>
               <View style={[sharedStyles.modalHeader, { backgroundColor: colors.bgDarker }]}>
-                <Text style={sharedStyles.modalTitle}>IMÁGENES ({selectedImages.length})</Text>
-                <Pressable style={sharedStyles.closeButton} onPress={() => setShowImages(false)}>
+                <Text style={sharedStyles.modalTitle}>IMÁGENES ({images.length})</Text>
+                <Pressable style={sharedStyles.closeButton} onPress={() => setModalVisible(false)}>
                   <Text style={[sharedStyles.closeButtonText, { color: colors.primary }]}>X</Text>
                 </Pressable>
               </View>
-              <ScrollView contentContainerStyle={styles.modalBody}>
-                <View style={styles.imageGrid}>
-                  {selectedImages.map((url, i) => (
-                    <View key={i} style={styles.imageSlot}>
-                      <Ionicons name="image" size={24} color={colors.textMuted} />
-                      <Text style={styles.imageLabel}>#{i + 1}</Text>
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
+              <FlatList
+                data={images}
+                renderItem={renderImageItem}
+                keyExtractor={(_, i) => String(i)}
+                numColumns={2}
+                contentContainerStyle={styles.imageGrid}
+                columnWrapperStyle={styles.imageRow}
+              />
             </View>
           </View>
         </Modal>
@@ -154,12 +231,12 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.text, fontSize: 12, fontWeight: "700", letterSpacing: 3, marginBottom: 14 },
   categoriesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
   categoryCard: {
-    width: "47%", backgroundColor: colors.surface, borderRadius: 6, padding: 16,
+    width: "47%", borderRadius: 6, padding: 16,
     alignItems: "center", borderWidth: 1.5, gap: 10,
   },
   categoryIcon: { width: 48, height: 48, borderRadius: 6, justifyContent: "center", alignItems: "center" },
   categoryLabel: { color: colors.text, fontSize: 12, fontWeight: "700", letterSpacing: 1, textAlign: "center" },
-  searchRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  searchRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
   searchInput: {
     flex: 1, backgroundColor: colors.surface, borderRadius: 6, padding: 14,
     fontSize: 15, color: colors.text, borderWidth: 1.5, borderColor: colors.border,
@@ -168,11 +245,15 @@ const styles = StyleSheet.create({
     width: 48, height: 48, borderRadius: 6, backgroundColor: colors.primary,
     justifyContent: "center", alignItems: "center",
   },
-  modalBody: { padding: 16 },
-  imageGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" },
-  imageSlot: {
-    width: "46%", backgroundColor: colors.surface, borderRadius: 6, padding: 20,
-    alignItems: "center", borderWidth: 1.5, borderColor: colors.border, gap: 8,
+  charsSection: { marginBottom: 16 },
+  charsLabel: { color: colors.textMuted, fontSize: 10, fontWeight: "700", letterSpacing: 2, marginBottom: 8 },
+  chipsList: { gap: 8 },
+  chip: {
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 4,
+    borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface,
   },
-  imageLabel: { color: colors.textMuted, fontSize: 10, fontWeight: "700", letterSpacing: 2 },
+  chipText: { color: colors.text, fontSize: 12, fontWeight: "600" },
+  imageGrid: { padding: 16, gap: IMAGE_GAP },
+  imageRow: { gap: IMAGE_GAP },
+  modalImage: { width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 8, backgroundColor: colors.bgDark },
 });
