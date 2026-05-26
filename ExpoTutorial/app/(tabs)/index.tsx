@@ -4,7 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 
-const API_BASE = "https://anime-api-production-57cf.up.railway.app";
+const API_BASE = __DEV__
+  ? 'http://localhost:3000'
+  : 'https://proyecto-animes-final-production.up.railway.app';
 
 const CATEGORIES = [
   { slug: "saint-seiya", apiSlug: "saintseiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
@@ -37,7 +39,7 @@ export default function InicioScreen() {
     setCharacters([]);
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/${selectedCategory}`);
+        const res = await fetch(`${API_BASE}/api/anime/${selectedCategory}`);
         if (!res.ok) throw new Error("Error al obtener personajes");
         const data = await res.json();
         setCharacters(data);
@@ -66,7 +68,7 @@ export default function InicioScreen() {
     setResult(null);
     setImages([]);
     try {
-      const res = await fetch(`${API_BASE}/${selectedCategory}/${encodeURIComponent(searchName.trim())}`);
+      const res = await fetch(`${API_BASE}/api/anime/${selectedCategory}/${encodeURIComponent(searchName.trim())}`);
       if (res.status === 404) {
         Alert.alert("No encontrado", "Personaje no encontrado");
         return;

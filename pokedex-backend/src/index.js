@@ -8,6 +8,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const authRoutes = require('./routes/auth');
 const categoriesRoutes = require('./routes/categories');
 const charactersRoutes = require('./routes/characters');
+const animeRoutes = require('./routes/anime');
 
 const app = express();
 
@@ -39,6 +40,7 @@ const swaggerOptions = {
       { name: 'Auth', description: 'Autenticación de usuarios' },
       { name: 'Categories', description: 'CRUD de categorías' },
       { name: 'Characters', description: 'CRUD de personajes' },
+      { name: 'Anime', description: 'Datos precargados de anime (público)' },
     ],
     components: {
       securitySchemes: {
@@ -91,6 +93,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/auth', authRoutes);
 app.use('/categories', categoriesRoutes);
 app.use('/characters', charactersRoutes);
+app.use('/api/anime', animeRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Anime API v2', docs: '/docs' });
