@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, sharedStyles } from "@/theme";
+import { useAnimeStore } from "@/store/animeStore";
 
 const API_BASE = __DEV__
   ? 'http://localhost:3000'
@@ -20,6 +21,7 @@ const IMAGE_PADDING = 32;
 const IMAGE_SIZE = (SCREEN_WIDTH - IMAGE_PADDING - IMAGE_GAP) / 2;
 
 export default function InicioScreen() {
+  const setLastCharacter = useAnimeStore(s => s.setLastCharacter);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchName, setSearchName] = useState("");
   const [characters, setCharacters] = useState<string[]>([]);
@@ -74,6 +76,10 @@ export default function InicioScreen() {
       const data = await res.json();
       setResult(data);
       if (data.images?.length > 0) setImages(data.images);
+      setLastCharacter(selectedCategory, {
+        name: data.name, age: data.age, power: data.power,
+        images: data.images || [], category: selectedCategory,
+      });
     } catch {
       setError("Error de conexión");
     } finally {
@@ -88,7 +94,7 @@ export default function InicioScreen() {
   );
 
   const renderImageItem = ({ item }: { item: string }) => (
-    <Image source={{ uri: item }} style={styles.modalImage} />
+    <Image source={{ uri: item, headers: { Accept: 'image/*' } }} style={styles.modalImage} resizeMode="cover" />
   );
 
   return (

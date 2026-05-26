@@ -56,14 +56,19 @@ export default function PersonajesScreen() {
   const handleSave = async () => {
     if (!name.trim() || !categoryId) { Alert.alert("Error", "Nombre y categoría son requeridos"); return; }
     try {
-      const data = { name: name.trim(), description: description.trim(), abilities: abilities.trim(), category_id: categoryId, images: images.length > 0 ? images : undefined };
+      const payload = { name: name.trim(), description: description.trim(), abilities: abilities.trim(), category_id: categoryId, images: images.length > 0 ? images : undefined };
       if (editing) {
-        await updateCharacter(editing.id, data);
+        await updateCharacter(editing.id, payload);
       } else {
-        await createCharacter(data);
+        await createCharacter(payload);
       }
-      setShowModal(false); loadData();
-    } catch (e: any) { Alert.alert("Error", e.message); }
+      Alert.alert("Éxito", `Personaje "${name.trim()}" creado correctamente`);
+      setShowModal(false);
+      loadData();
+    } catch (e: any) {
+      const msg = e?.message || 'Error desconocido';
+      Alert.alert("Error", msg);
+    }
   };
 
   const handleDelete = (id: number | string, name: string) => {

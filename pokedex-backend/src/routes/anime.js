@@ -54,7 +54,7 @@ const DATA = {
 };
 
 function getPlaceholderImage(name) {
-  return `https://via.placeholder.com/300x300/1a1a2e/00ffff?text=${encodeURIComponent(name)}`;
+  return `https://placehold.co/300x300/1a1a2e/00ffff?text=${encodeURIComponent(name)}`;
 }
 
 /**
