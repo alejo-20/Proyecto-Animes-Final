@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 
 const API_BASE = __DEV__
@@ -21,7 +20,6 @@ const IMAGE_PADDING = 32;
 const IMAGE_SIZE = (SCREEN_WIDTH - IMAGE_PADDING - IMAGE_GAP) / 2;
 
 export default function InicioScreen() {
-  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchName, setSearchName] = useState("");
   const [characters, setCharacters] = useState<string[]>([]);
@@ -42,7 +40,7 @@ export default function InicioScreen() {
         const res = await fetch(`${API_BASE}/api/anime/${selectedCategory}`);
         if (!res.ok) throw new Error("Error al obtener personajes");
         const data = await res.json();
-        setCharacters(data);
+        if (Array.isArray(data)) setCharacters(data);
       } catch {
         setError("Error de conexión al cargar personajes");
       }
@@ -54,7 +52,6 @@ export default function InicioScreen() {
     setSearchName("");
     setResult(null);
     setError("");
-    router.push('/(tabs)/personajes?category=' + cat.slug);
   };
 
   const handleSearch = async () => {
@@ -110,8 +107,9 @@ export default function InicioScreen() {
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.apiSlug;
             return (
-              <Pressable
+              <TouchableOpacity
                 key={cat.slug}
+                activeOpacity={0.7}
                 style={[styles.categoryCard, { borderColor: isSelected ? cat.color : cat.color + "40", backgroundColor: isSelected ? cat.color + "10" : colors.surface }]}
                 onPress={() => handleCategoryPress(cat)}
               >
@@ -119,7 +117,7 @@ export default function InicioScreen() {
                   <Ionicons name={cat.icon} size={24} color={cat.color} />
                 </View>
                 <Text style={styles.categoryLabel}>{cat.label}</Text>
-              </Pressable>
+              </TouchableOpacity>
             );
           })}
         </View>
