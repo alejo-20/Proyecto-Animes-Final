@@ -93,8 +93,8 @@ export default function PersonajesScreen() {
               <Text style={[styles.chipText, !filterCat && { color: colors.primary }]}>TODOS</Text>
             </Pressable>
             {categories.map(cat => (
-              <Pressable key={cat.id} style={[styles.chip, filterCat === cat.slug && { borderColor: colors.primary }]} onPress={() => { setFilterCat(cat.slug); loadData(cat.slug); }}>
-                <Text style={[styles.chipText, filterCat === cat.slug && { color: colors.primary }]}>{cat.name.toUpperCase()}</Text>
+              <Pressable key={cat.id} style={[styles.chip, filterCat === cat.name && { borderColor: colors.primary }]} onPress={() => { setFilterCat(cat.name); loadData(cat.name); }}>
+                <Text style={[styles.chipText, filterCat === cat.name && { color: colors.primary }]}>{cat.name.toUpperCase()}</Text>
               </Pressable>
             ))}
           </ScrollView>

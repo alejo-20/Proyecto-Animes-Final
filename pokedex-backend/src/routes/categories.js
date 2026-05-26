@@ -12,7 +12,8 @@ router.get('/', requireAuth, async (req, res) => {
     .order('created_at');
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data || []);
+  const result = (data || []).map(c => ({ ...c, slug: c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }));
+  res.json(result);
 });
 
 router.post('/', requireAuth, async (req, res) => {
@@ -22,13 +23,10 @@ router.post('/', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'El nombre es requerido' });
   }
 
-  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
   const { data, error } = await supabaseAdmin
     .from('categories')
     .insert({
       name,
-      slug,
       description: description || '',
       user_id: req.user.id,
     })
@@ -36,7 +34,7 @@ router.post('/', requireAuth, async (req, res) => {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json(data);
+  res.status(201).json({ ...data, slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') });
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
@@ -44,10 +42,7 @@ router.put('/:id', requireAuth, async (req, res) => {
   const { name, description } = req.body;
 
   const updates = {};
-  if (name) {
-    updates.name = name;
-    updates.slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  }
+  if (name !== undefined) updates.name = name;
   if (description !== undefined) updates.description = description;
 
   const { data, error } = await supabaseAdmin
@@ -60,7 +55,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   if (!data) return res.status(404).json({ error: 'Categoría no encontrada' });
-  res.json(data);
+  res.json({ ...data, slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') });
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {

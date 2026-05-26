@@ -6,10 +6,10 @@ import { colors, sharedStyles } from "@/theme";
 import { getCharacters } from "@/services/api";
 
 const CATEGORIES = [
-  { slug: "saint-seiya", label: "Saint Seiya", icon: "shield" as const, color: colors.primary },
-  { slug: "hunter-x-hunter", label: "Hunter x Hunter", icon: "compass" as const, color: colors.secondary },
-  { slug: "one-piece", label: "One Piece", icon: "boat" as const, color: colors.accent },
-  { slug: "naruto", label: "Naruto", icon: "flame" as const, color: "#FF6B35" },
+  { slug: "saint-seiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
+  { slug: "hunter-x-hunter", label: "Hunter x Hunter", name: "Hunter x Hunter", icon: "compass" as const, color: colors.secondary },
+  { slug: "one-piece", label: "One Piece", name: "One Piece", icon: "boat" as const, color: colors.accent },
+  { slug: "naruto", label: "Naruto", name: "Naruto", icon: "flame" as const, color: "#FF6B35" },
 ];
 
 export default function InicioScreen() {
@@ -57,7 +57,7 @@ export default function InicioScreen() {
         <Text style={styles.sectionTitle}>CATEGORÍAS</Text>
         <View style={styles.categoriesGrid}>
           {CATEGORIES.map((cat) => (
-            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + cat.slug)}>
+            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + encodeURIComponent(cat.name))}>
               <View style={[styles.categoryIcon, { backgroundColor: cat.color + "15" }]}>
                 <Ionicons name={cat.icon} size={24} color={cat.color} />
               </View>

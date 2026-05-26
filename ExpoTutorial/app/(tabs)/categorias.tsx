@@ -96,7 +96,7 @@ export default function CategoriasScreen() {
                   </Pressable>
                 </View>
               </View>
-              <Text style={styles.catSlug}>/{cat.slug}</Text>
+              <Text style={styles.catSlug}>/{cat.name.toLowerCase().replace(/\s+/g, '-')}</Text>
             </View>
           ))
         )}

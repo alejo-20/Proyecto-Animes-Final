@@ -9,11 +9,11 @@ router.get('/', requireAuth, async (req, res) => {
 
   let query = supabaseAdmin
     .from('characters')
-    .select('*, categories!inner(name, slug)')
+    .select('*, categories!inner(name)')
     .eq('categories.user_id', req.user.id);
 
   if (category) {
-    query = query.eq('categories.slug', category);
+    query = query.or(`categories.name.ilike.%${category.replace(/-/g, ' ')}%,categories.name.ilike.%${category}%`);
   }
 
   const { data, error } = await query.order('created_at');
