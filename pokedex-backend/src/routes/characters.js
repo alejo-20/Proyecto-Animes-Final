@@ -13,7 +13,8 @@ router.get('/', requireAuth, async (req, res) => {
     .eq('categories.user_id', req.user.id);
 
   if (category) {
-    query = query.or(`categories.name.ilike.%${category.replace(/-/g, ' ')}%,categories.name.ilike.%${category}%`);
+    const searchTerm = category.replace(/-/g, ' ');
+    query = query.ilike('categories.name', `%${searchTerm}%`);
   }
 
   const { data, error } = await query.order('created_at');
