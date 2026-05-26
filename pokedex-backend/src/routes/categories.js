@@ -12,38 +12,43 @@ router.get('/', requireAuth, async (req, res) => {
     .order('created_at');
 
   if (error) return res.status(500).json({ error: error.message });
-  const result = (data || []).map(c => ({ ...c, slug: c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }));
+  const result = (data || []).map(c => ({ ...c, slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }));
   res.json(result);
 });
 
 router.post('/', requireAuth, async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, emoji } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'El nombre es requerido' });
   }
 
+  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   const { data, error } = await supabaseAdmin
     .from('categories')
     .insert({
       name,
+      slug,
       description: description || '',
+      emoji: emoji || '🎌',
       user_id: req.user.id,
     })
     .select()
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json({ ...data, slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') });
+  res.status(201).json(data);
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description, emoji } = req.body;
 
   const updates = {};
-  if (name !== undefined) updates.name = name;
+  if (name !== undefined) { updates.name = name; updates.slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); }
   if (description !== undefined) updates.description = description;
+  if (emoji !== undefined) updates.emoji = emoji;
 
   const { data, error } = await supabaseAdmin
     .from('categories')
@@ -55,7 +60,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   if (!data) return res.status(404).json({ error: 'Categoría no encontrada' });
-  res.json({ ...data, slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') });
+  res.json(data);
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {

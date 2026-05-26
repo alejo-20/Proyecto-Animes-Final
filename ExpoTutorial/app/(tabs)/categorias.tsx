@@ -11,6 +11,7 @@ export default function CategoriasScreen() {
   const [editing, setEditing] = useState<any>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [emoji, setEmoji] = useState("");
 
   useFocusEffect(
     useCallback(() => { loadCategories(); }, [])
@@ -27,6 +28,7 @@ export default function CategoriasScreen() {
     setEditing(null);
     setName("");
     setDescription("");
+    setEmoji("");
     setShowModal(true);
   };
 
@@ -34,6 +36,7 @@ export default function CategoriasScreen() {
     setEditing(cat);
     setName(cat.name);
     setDescription(cat.description || "");
+    setEmoji(cat.emoji || "");
     setShowModal(true);
   };
 
@@ -41,9 +44,9 @@ export default function CategoriasScreen() {
     if (!name.trim()) { Alert.alert("Error", "El nombre es requerido"); return; }
     try {
       if (editing) {
-        await updateCategory(editing.id, name.trim(), description.trim());
+        await updateCategory(editing.id, name.trim(), description.trim(), emoji.trim() || undefined);
       } else {
-        await createCategory(name.trim(), description.trim());
+        await createCategory(name.trim(), description.trim(), emoji.trim() || undefined);
       }
       setShowModal(false);
       loadCategories();
@@ -84,7 +87,7 @@ export default function CategoriasScreen() {
             <View key={cat.id} style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
               <View style={styles.catRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.catName}>{cat.name}</Text>
+                  <Text style={styles.catName}>{cat.emoji ? cat.emoji + ' ' : ''}{cat.name}</Text>
                   {cat.description ? <Text style={styles.catDesc}>{cat.description}</Text> : null}
                 </View>
                 <View style={styles.catActions}>
@@ -96,7 +99,7 @@ export default function CategoriasScreen() {
                   </Pressable>
                 </View>
               </View>
-              <Text style={styles.catSlug}>/{cat.name.toLowerCase().replace(/\s+/g, '-')}</Text>
+              <Text style={styles.catSlug}>/{cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}</Text>
             </View>
           ))
         )}
@@ -116,6 +119,8 @@ export default function CategoriasScreen() {
                 <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre" placeholderTextColor={colors.textMuted} />
                 <Text style={sharedStyles.label}>DESCRIPCIÓN</Text>
                 <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Descripción" placeholderTextColor={colors.textMuted} multiline />
+                <Text style={sharedStyles.label}>EMOJI</Text>
+                <TextInput style={styles.input} value={emoji} onChangeText={setEmoji} placeholder="🎌" placeholderTextColor={colors.textMuted} maxLength={10} />
                 <Pressable style={[sharedStyles.button, { backgroundColor: colors.primary, borderColor: colors.primaryDark }]} onPress={handleSave}>
                   <Text style={sharedStyles.buttonText}>{editing ? "ACTUALIZAR" : "CREAR"}</Text>
                 </Pressable>

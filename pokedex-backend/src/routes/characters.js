@@ -13,20 +13,23 @@ router.get('/', requireAuth, async (req, res) => {
     .eq('categories.user_id', req.user.id);
 
   if (category) {
-    const searchTerm = category.replace(/-/g, ' ');
-    query = query.ilike('categories.name', `%${searchTerm}%`);
+    const searchTerm = category.replace(/-/g, ' ').toLowerCase();
+    query = query.textSearch('categories.name', searchTerm, { type: 'plain' });
   }
 
   const { data, error } = await query.order('created_at');
 
   if (error) return res.status(500).json({ error: error.message });
-  const result = (data || []).map(c => ({
+  let result = (data || []).map(c => ({
     ...c,
-    description: c.description || '',
-    abilities: c.abilities || '',
-    images: c.images || [],
-    categories: c.categories ? { ...c.categories, slug: c.categories.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') } : c.categories,
+    categories: c.categories ? { ...c.categories, slug: c.categories.slug || c.categories.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') } : c.categories,
   }));
+
+  if (category) {
+    const searchTerm = category.replace(/-/g, ' ').toLowerCase();
+    result = result.filter(c => c.categories && c.categories.name.toLowerCase().includes(searchTerm));
+  }
+
   res.json(result);
 });
 
@@ -52,14 +55,17 @@ router.post('/', requireAuth, async (req, res) => {
     .from('characters')
     .insert({
       name,
+      description: description || '',
+      abilities: abilities || '',
       category_id,
       user_id: req.user.id,
+      images: images || [],
     })
     .select()
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json({ ...data, description: description || '', abilities: abilities || '', images: images || [] });
+  res.status(201).json(data);
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
@@ -68,6 +74,9 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   const updates = {};
   if (name !== undefined) updates.name = name;
+  if (description !== undefined) updates.description = description;
+  if (abilities !== undefined) updates.abilities = abilities;
+  if (images !== undefined) updates.images = images;
 
   const { data, error } = await supabaseAdmin
     .from('characters')
@@ -79,7 +88,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   if (!data) return res.status(404).json({ error: 'Personaje no encontrado' });
-  res.json({ ...data, description: req.body.description || data.description || '', abilities: req.body.abilities || data.abilities || '', images: req.body.images || data.images || [] });
+  res.json(data);
 });
 
 router.delete('/:id', requireAuth, async (req, res) => {

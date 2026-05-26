@@ -23,23 +23,23 @@ export async function getCategories(): Promise<any[]> {
   return res.json();
 }
 
-export async function createCategory(name: string, description?: string): Promise<any> {
+export async function createCategory(name: string, description?: string, emoji?: string): Promise<any> {
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_URL}/categories`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ name, description }),
+    body: JSON.stringify({ name, description, emoji }),
   });
   if (!res.ok) { const err = await res.json().catch(() => ({ message: 'Error del servidor' })); throw new Error(err.error || err.message || 'Error al crear categoría'); }
   return res.json();
 }
 
-export async function updateCategory(id: number | string, name: string, description?: string): Promise<any> {
+export async function updateCategory(id: number | string, name: string, description?: string, emoji?: string): Promise<any> {
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_URL}/categories/${id}`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({ name, description }),
+    body: JSON.stringify({ name, description, emoji }),
   });
   if (!res.ok) { const err = await res.json().catch(() => ({ message: 'Error del servidor' })); throw new Error(err.error || err.message || 'Error al actualizar categoría'); }
   return res.json();
