@@ -7,7 +7,7 @@ import { getCategories, getCharacters, createCharacter, updateCharacter, deleteC
 import * as ImagePicker from "expo-image-picker";
 
 export default function PersonajesScreen() {
-  const { category } = useLocalSearchParams<{ category?: string }>();
+  const params = useLocalSearchParams<{ category?: string }>();
   const [characters, setCharacters] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -17,20 +17,23 @@ export default function PersonajesScreen() {
   const [abilities, setAbilities] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [images, setImages] = useState<string[]>([]);
-  const [filterCat, setFilterCat] = useState<string>(category || "");
-
-  useFocusEffect(
-    useCallback(() => { loadData(); }, [])
-  );
+  const [filterCat, setFilterCat] = useState<string>("");
 
   const loadData = async (catSlug?: string) => {
     try {
-      const slug = catSlug ?? filterCat;
-      const [chars, cats] = await Promise.all([getCharacters(slug || undefined), getCategories()]);
+      const [chars, cats] = await Promise.all([getCharacters(catSlug), getCategories()]);
       setCharacters(chars);
       setCategories(cats);
     } catch { setCharacters([]); setCategories([]); }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const cat = params.category || "";
+      setFilterCat(cat);
+      loadData(cat || undefined);
+    }, [params.category])
+  );
 
   const selectImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.8, allowsMultipleSelection: true });

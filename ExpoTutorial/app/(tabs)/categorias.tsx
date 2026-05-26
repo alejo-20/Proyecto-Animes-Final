@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "@/services/api";
 
 export default function CategoriasScreen() {
+  const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -84,7 +85,7 @@ export default function CategoriasScreen() {
           </View>
         ) : (
           categories.map((cat) => (
-            <View key={cat.id} style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
+            <Pressable key={cat.id} style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]} onPress={() => router.push(`/categoria/${cat.id}`)}>
               <View style={styles.catRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.catName}>{cat.emoji ? cat.emoji + ' ' : ''}{cat.name}</Text>
@@ -100,7 +101,7 @@ export default function CategoriasScreen() {
                 </View>
               </View>
               <Text style={styles.catSlug}>/{cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}</Text>
-            </View>
+            </Pressable>
           ))
         )}
 

@@ -57,7 +57,7 @@ export default function InicioScreen() {
         <Text style={styles.sectionTitle}>CATEGORÍAS</Text>
         <View style={styles.categoriesGrid}>
           {CATEGORIES.map((cat) => (
-            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + encodeURIComponent(cat.name))}>
+            <Pressable key={cat.slug} style={[styles.categoryCard, { borderColor: cat.color + "40" }]} onPress={() => router.push('/(tabs)/personajes?category=' + cat.slug)}>
               <View style={[styles.categoryIcon, { backgroundColor: cat.color + "15" }]}>
                 <Ionicons name={cat.icon} size={24} color={cat.color} />
               </View>

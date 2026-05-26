@@ -53,7 +53,7 @@ export async function deleteCategory(id: number | string): Promise<void> {
 
 export async function getCharacters(category?: string): Promise<any[]> {
   const headers = await authHeaders();
-  const url = category ? `${BACKEND_URL}/characters?category=${category}` : `${BACKEND_URL}/characters`;
+  const url = category ? `${BACKEND_URL}/characters?category=${encodeURIComponent(category)}` : `${BACKEND_URL}/characters`;
   const res = await fetch(url, { headers });
   if (!res.ok) { const err = await res.json().catch(() => ({ message: 'Error del servidor' })); throw new Error(err.error || err.message || 'Error al obtener personajes'); }
   return res.json();
