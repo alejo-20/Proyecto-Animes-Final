@@ -64,7 +64,7 @@ export default function ResumenScreen() {
             <View key={category} style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
               <View style={styles.chRow}>
                 {char.images?.[0] ? (
-                  <Image source={{ uri: char.images[0], headers: { Accept: 'image/*' } }} style={styles.chImage} resizeMode="cover" />
+                  <Image source={{ uri: char.images[0] }} style={styles.chImage} resizeMode="cover" />
                 ) : (
                   <View style={[styles.chImagePlaceholder, { backgroundColor: colors.surface }]}>
                     <Ionicons name="image-outline" size={20} color={colors.textMuted} />

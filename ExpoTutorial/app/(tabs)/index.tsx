@@ -94,7 +94,7 @@ export default function InicioScreen() {
   );
 
   const renderImageItem = ({ item }: { item: string }) => (
-    <Image source={{ uri: item, headers: { Accept: 'image/*' } }} style={styles.modalImage} resizeMode="cover" />
+    <Image source={{ uri: item }} style={styles.modalImage} resizeMode="cover" />
   );
 
   return (

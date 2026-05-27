@@ -53,8 +53,14 @@ const DATA = {
   ],
 };
 
-function getPlaceholderImage(name) {
-  return `https://placehold.co/300x300/1a1a2e/00ffff?text=${encodeURIComponent(name)}`;
+function getImages(name) {
+  const s = encodeURIComponent(name);
+  return [
+    `https://picsum.photos/seed/${s}1/300/300`,
+    `https://picsum.photos/seed/${s}2/300/300`,
+    `https://picsum.photos/seed/${s}3/300/300`,
+    `https://picsum.photos/seed/${s}4/300/300`,
+  ];
 }
 
 /**
@@ -146,7 +152,7 @@ router.get('/:category/:name', (req, res) => {
   const found = chars.find(c => c.name.toLowerCase() === name.toLowerCase());
   if (!found) return res.status(404).json({ error: 'Personaje no encontrado' });
 
-  const images = Array.from({ length: 4 }, () => getPlaceholderImage(found.name));
+  const images = getImages(found.name);
   res.json({ ...found, images });
 });
 

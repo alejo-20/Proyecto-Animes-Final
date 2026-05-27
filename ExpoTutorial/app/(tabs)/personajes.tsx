@@ -75,7 +75,13 @@ export default function PersonajesScreen() {
     Alert.alert("Eliminar", `¿Eliminar "${name}"?`, [
       { text: "Cancelar", style: "cancel" },
       { text: "Eliminar", style: "destructive", onPress: async () => {
-        try { await deleteCharacter(id); loadData(); } catch (e: any) { Alert.alert("Error", e.message); }
+        try {
+          await deleteCharacter(id);
+          Alert.alert("Éxito", `"${name}" eliminado`);
+          loadData();
+        } catch (e: any) {
+          Alert.alert("Error", e?.message || 'No se pudo eliminar');
+        }
       }},
     ]);
   };
@@ -117,6 +123,9 @@ export default function PersonajesScreen() {
           characters.map(ch => (
             <View key={ch.id} style={[sharedStyles.card, { borderLeftWidth: 3, borderLeftColor: colors.secondary }]}>
               <View style={styles.chRow}>
+                {ch.images?.length > 0 ? (
+                  <Image source={{ uri: `data:image/jpeg;base64,${ch.images[0]}` }} style={styles.chAvatar} />
+                ) : null}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.chName}>{ch.name}</Text>
                   <Text style={styles.chCat}>{ch.categories?.name || "Sin categoría"}</Text>
@@ -135,7 +144,13 @@ export default function PersonajesScreen() {
                 <Text style={styles.chValue}>{ch.description || "—"}</Text>
                 <Text style={styles.chLabel}>HABILIDADES</Text>
                 <Text style={styles.chValue}>{ch.abilities || "—"}</Text>
-                {ch.images?.length > 0 && <Text style={styles.chValue}>{ch.images.length} imagen(es)</Text>}
+                {ch.images?.length > 0 && (
+                  <View style={styles.chImagesRow}>
+                    {ch.images.slice(0, 4).map((img: string, i: number) => (
+                      <Image key={i} source={{ uri: `data:image/jpeg;base64,${img}` }} style={styles.chThumb} />
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           ))
@@ -213,6 +228,9 @@ const styles = StyleSheet.create({
   chBtn: { width: 32, height: 32, borderRadius: 4, justifyContent: "center", alignItems: "center" },
   input: { backgroundColor: colors.surfaceLight, borderRadius: 6, padding: 14, fontSize: 15, color: colors.text, marginBottom: 14, borderWidth: 1.5, borderColor: colors.border },
   textArea: { minHeight: 80, textAlignVertical: "top" },
+  chAvatar: { width: 44, height: 44, borderRadius: 8, backgroundColor: colors.bgDark },
+  chImagesRow: { flexDirection: "row", gap: 6, marginTop: 8 },
+  chThumb: { width: 48, height: 48, borderRadius: 6, backgroundColor: colors.bgDark },
   catPicker: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 14 },
   catOption: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface },
   catOptionText: { color: colors.textMuted, fontSize: 11, fontWeight: "600" },
