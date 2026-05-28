@@ -53,13 +53,88 @@ const DATA = {
   ],
 };
 
-function getImages(name) {
-  const s = encodeURIComponent(name);
-  return [
-    `https://picsum.photos/seed/${s}1/300/300`,
-    `https://picsum.photos/seed/${s}2/300/300`,
-    `https://picsum.photos/seed/${s}3/300/300`,
-    `https://picsum.photos/seed/${s}4/300/300`,
+const CHARACTER_IMAGES = {
+  naruto: [
+    'https://cdn.myanimelist.net/images/characters/2/284121.jpg',
+    'https://cdn.myanimelist.net/images/characters/2/284121.jpg',
+    'https://cdn.myanimelist.net/images/characters/2/284121.jpg',
+    'https://cdn.myanimelist.net/images/characters/2/284121.jpg',
+  ],
+  sasuke: [
+    'https://cdn.myanimelist.net/images/characters/9/131317.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/131317.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/131317.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/131317.jpg',
+  ],
+  sakura: [
+    'https://cdn.myanimelist.net/images/characters/10/114399.jpg',
+    'https://cdn.myanimelist.net/images/characters/10/114399.jpg',
+    'https://cdn.myanimelist.net/images/characters/10/114399.jpg',
+    'https://cdn.myanimelist.net/images/characters/10/114399.jpg',
+  ],
+  kakashi: [
+    'https://cdn.myanimelist.net/images/characters/7/284129.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/284129.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/284129.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/284129.jpg',
+  ],
+  itachi: [
+    'https://cdn.myanimelist.net/images/characters/9/15297.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/15297.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/15297.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/15297.jpg',
+  ],
+  gaara: [
+    'https://cdn.myanimelist.net/images/characters/3/92380.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/92380.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/92380.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/92380.jpg',
+  ],
+  luffy: [
+    'https://cdn.myanimelist.net/images/characters/9/310307.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/310307.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/310307.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/310307.jpg',
+  ],
+  zoro: [
+    'https://cdn.myanimelist.net/images/characters/3/100534.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/100534.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/100534.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/100534.jpg',
+  ],
+  sanji: [
+    'https://cdn.myanimelist.net/images/characters/7/112331.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/112331.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/112331.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/112331.jpg',
+  ],
+  gon: [
+    'https://cdn.myanimelist.net/images/characters/3/83620.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/83620.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/83620.jpg',
+    'https://cdn.myanimelist.net/images/characters/3/83620.jpg',
+  ],
+  killua: [
+    'https://cdn.myanimelist.net/images/characters/7/3531.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/3531.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/3531.jpg',
+    'https://cdn.myanimelist.net/images/characters/7/3531.jpg',
+  ],
+  seiya: [
+    'https://cdn.myanimelist.net/images/characters/9/72225.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/72225.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/72225.jpg',
+    'https://cdn.myanimelist.net/images/characters/9/72225.jpg',
+  ],
+};
+
+function getCharacterImages(name) {
+  const key = name.toLowerCase();
+  return CHARACTER_IMAGES[key] || [
+    `https://picsum.photos/seed/${encodeURIComponent(name)}1/300/300`,
+    `https://picsum.photos/seed/${encodeURIComponent(name)}2/300/300`,
+    `https://picsum.photos/seed/${encodeURIComponent(name)}3/300/300`,
+    `https://picsum.photos/seed/${encodeURIComponent(name)}4/300/300`,
   ];
 }
 
@@ -152,7 +227,7 @@ router.get('/:category/:name', (req, res) => {
   const found = chars.find(c => c.name.toLowerCase() === name.toLowerCase());
   if (!found) return res.status(404).json({ error: 'Personaje no encontrado' });
 
-  const images = getImages(found.name);
+  const images = getCharacterImages(found.name);
   res.json({ ...found, images });
 });
 

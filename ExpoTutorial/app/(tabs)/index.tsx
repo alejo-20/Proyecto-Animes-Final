@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, sharedStyles } from "@/theme";
 import { useAnimeStore } from "@/store/animeStore";
-
-const API_BASE = __DEV__
-  ? 'http://localhost:3000'
-  : 'https://proyecto-animes-final-production.up.railway.app';
 
 const CATEGORIES = [
   { slug: "saint-seiya", apiSlug: "saintseiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
@@ -91,10 +87,6 @@ export default function InicioScreen() {
     <Pressable style={styles.chip} onPress={() => setSearchName(item)}>
       <Text style={styles.chipText}>{item}</Text>
     </Pressable>
-  );
-
-  const renderImageItem = ({ item }: { item: string }) => (
-    <Image source={{ uri: item }} style={styles.modalImage} resizeMode="cover" />
   );
 
   return (
@@ -193,22 +185,19 @@ export default function InicioScreen() {
         )}
 
         <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
-          <View style={sharedStyles.backdrop}>
-            <View style={[sharedStyles.modalContainer, { maxWidth: 500, maxHeight: "80%" }]}>
-              <View style={[sharedStyles.modalHeader, { backgroundColor: colors.bgDarker }]}>
-                <Text style={sharedStyles.modalTitle}>IMÁGENES ({images.length})</Text>
-                <Pressable style={sharedStyles.closeButton} onPress={() => setModalVisible(false)}>
-                  <Text style={[sharedStyles.closeButtonText, { color: colors.primary }]}>X</Text>
-                </Pressable>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>IMÁGENES ({images.length})</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </TouchableOpacity>
               </View>
-              <FlatList
-                data={images}
-                renderItem={renderImageItem}
-                keyExtractor={(_, i) => String(i)}
-                numColumns={2}
-                contentContainerStyle={styles.imageGrid}
-                columnWrapperStyle={styles.imageRow}
-              />
+              <View style={styles.imageGrid}>
+                {images.map((uri, index) => (
+                  <Image key={index} source={{ uri }} style={styles.gridImage} resizeMode="cover" />
+                ))}
+              </View>
             </View>
           </View>
         </Modal>
@@ -259,7 +248,44 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface,
   },
   chipText: { color: colors.text, fontSize: 12, fontWeight: "600" },
-  imageGrid: { padding: 16, gap: IMAGE_GAP },
-  imageRow: { gap: IMAGE_GAP },
-  modalImage: { width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 8, backgroundColor: colors.bgDark },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#0f0f1a',
+    borderRadius: 12,
+    padding: 16,
+    width: '90%',
+    maxWidth: 500,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    color: '#00ffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 2,
+  },
+  modalClose: {
+    color: '#fff',
+    fontSize: 18,
+    padding: 4,
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  gridImage: {
+    width: '48%',
+    aspectRatio: 1,
+    borderRadius: 8,
+  },
 });
