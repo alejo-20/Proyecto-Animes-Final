@@ -1,9 +1,14 @@
 import { useCallback, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from "@/services/supabase";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "@/services/api";
+
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://proyecto-animes-final-production.up.railway.app';
 
 export default function CategoriasScreen() {
   const router = useRouter();
@@ -54,13 +59,36 @@ export default function CategoriasScreen() {
     } catch (e: any) { Alert.alert("Error", e.message); }
   };
 
-  const handleDelete = (id: number | string, name: string) => {
-    Alert.alert("Eliminar", `¿Eliminar "${name}"?`, [
+  const handleDelete = (id: number | string, nombre: string) => {
+    Alert.alert("¿Eliminar?", `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: "Cancelar", style: "cancel" },
-      { text: "Eliminar", style: "destructive", onPress: async () => {
-        try { await deleteCategory(id); loadCategories(); }
-        catch (e: any) { Alert.alert("Error", e.message); }
-      }},
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData?.session?.access_token;
+            if (!token) {
+              Alert.alert("Error", "No hay sesión activa");
+              return;
+            }
+            const res = await fetch(`${API_BASE}/categories/${id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              Alert.alert("Error", err.error || "No se pudo eliminar");
+              return;
+            }
+            Alert.alert("✅ Eliminado", `"${nombre}" fue eliminado`);
+            loadCategories();
+          } catch (e: any) {
+            Alert.alert("Error", e?.message || "Error de conexión");
+          }
+        },
+      },
     ]);
   };
 
@@ -95,9 +123,9 @@ export default function CategoriasScreen() {
                   <Pressable style={[styles.catBtn, { backgroundColor: colors.accent }]} onPress={() => openEdit(cat)}>
                     <Ionicons name="create" size={16} color={colors.bg} />
                   </Pressable>
-                  <Pressable style={[styles.catBtn, { backgroundColor: colors.danger }]} onPress={() => handleDelete(cat.id, cat.name)}>
+                  <TouchableOpacity style={[styles.catBtn, { backgroundColor: colors.danger }]} onPress={() => handleDelete(cat.id, cat.name)}>
                     <Ionicons name="trash" size={16} color={colors.text} />
-                  </Pressable>
+                  </TouchableOpacity>
                 </View>
               </View>
               <Text style={styles.catSlug}>/{cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}</Text>

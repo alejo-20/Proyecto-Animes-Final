@@ -1,9 +1,14 @@
 import { useCallback, useState } from "react";
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { colors, sharedStyles } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from "@/services/supabase";
 import { getCategories, getCharacters, createCharacter, updateCharacter, deleteCharacter } from "@/services/api";
+
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://proyecto-animes-final-production.up.railway.app';
 import * as ImagePicker from "expo-image-picker";
 
 export default function PersonajesScreen() {
@@ -71,18 +76,36 @@ export default function PersonajesScreen() {
     }
   };
 
-  const handleDelete = (id: number | string, name: string) => {
-    Alert.alert("Eliminar", `¿Eliminar "${name}"?`, [
+  const handleDelete = (id: number | string, nombre: string) => {
+    Alert.alert("¿Eliminar?", `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: "Cancelar", style: "cancel" },
-      { text: "Eliminar", style: "destructive", onPress: async () => {
-        try {
-          await deleteCharacter(id);
-          Alert.alert("Éxito", `"${name}" eliminado`);
-          loadData();
-        } catch (e: any) {
-          Alert.alert("Error", e?.message || 'No se pudo eliminar');
-        }
-      }},
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData?.session?.access_token;
+            if (!token) {
+              Alert.alert("Error", "No hay sesión activa");
+              return;
+            }
+            const res = await fetch(`${API_BASE}/characters/${id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              Alert.alert("Error", err.error || "No se pudo eliminar");
+              return;
+            }
+            Alert.alert("✅ Eliminado", `"${nombre}" fue eliminado`);
+            loadData();
+          } catch (e: any) {
+            Alert.alert("Error", e?.message || "Error de conexión");
+          }
+        },
+      },
     ]);
   };
 
@@ -134,9 +157,9 @@ export default function PersonajesScreen() {
                   <Pressable style={[styles.chBtn, { backgroundColor: colors.accent }]} onPress={() => openEdit(ch)}>
                     <Ionicons name="create" size={16} color={colors.bg} />
                   </Pressable>
-                  <Pressable style={[styles.chBtn, { backgroundColor: colors.danger }]} onPress={() => handleDelete(ch.id, ch.name)}>
+                  <TouchableOpacity style={[styles.chBtn, { backgroundColor: colors.danger }]} onPress={() => handleDelete(ch.id, ch.name)}>
                     <Ionicons name="trash" size={16} color={colors.text} />
-                  </Pressable>
+                  </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.chBody}>
