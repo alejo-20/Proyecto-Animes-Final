@@ -4,6 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, sharedStyles } from "@/theme";
 import { useAnimeStore } from "@/store/animeStore";
 
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://proyecto-animes-final-production.up.railway.app';
+
 const CATEGORIES = [
   { slug: "saint-seiya", apiSlug: "saintseiya", label: "Saint Seiya", name: "Saint Seiya", icon: "shield" as const, color: colors.primary },
   { slug: "hunter-x-hunter", apiSlug: "hunterxhunter", label: "Hunter x Hunter", name: "Hunter x Hunter", icon: "compass" as const, color: colors.secondary },
@@ -39,8 +43,9 @@ export default function InicioScreen() {
         if (!res.ok) throw new Error("Error al obtener personajes");
         const data = await res.json();
         if (Array.isArray(data)) setCharacters(data);
-      } catch {
-        setError("Error de conexión al cargar personajes");
+      } catch (err: any) {
+        console.error('Error cargando personajes:', err);
+        setError(`Error: ${err?.message || 'Sin conexión al backend'}`);
       }
     })();
   }, [selectedCategory]);
