@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/services/supabase";
 import { getCategories, getCharacters, createCharacter, updateCharacter, deleteCharacter } from "@/services/api";
 
-const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+const API_BASE = __DEV__
   ? 'http://localhost:3000'
   : 'https://proyecto-animes-final-production.up.railway.app';
 import * as ImagePicker from "expo-image-picker";

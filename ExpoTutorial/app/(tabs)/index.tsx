@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, sharedStyles } from "@/theme";
 import { useAnimeStore } from "@/store/animeStore";
 
-const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+const API_BASE = __DEV__
   ? 'http://localhost:3000'
   : 'https://proyecto-animes-final-production.up.railway.app';
 
